@@ -31,9 +31,13 @@ public enum BeanFactory {
         beans = Maps.newHashMap();
         this.beanCreators = beanCreators;
         for (Class<?> clazz : beanCreators.keySet()) {
-            if (!beans.containsKey(clazz)) {
-                beans.put(clazz, instantiate(clazz, Sets.newHashSet(clazz)));
-            }
+            initializeBean(clazz);
+        }
+    }
+
+    private void initializeBean(Class<?> clazz) {
+        if (!beans.containsKey(clazz)) {
+            beans.put(clazz, instantiate(clazz, Sets.newHashSet(clazz)));
         }
     }
 
@@ -41,9 +45,7 @@ public enum BeanFactory {
         beans = initialBeans;
         this.beanCreators = beanCreators;
         for (Class<?> clazz : beanCreators.keySet()) {
-            if (!beans.containsKey(clazz)) {
-                beans.put(clazz, instantiate(clazz, Sets.newHashSet(clazz)));
-            }
+            initializeBean(clazz);
         }
     }
 
@@ -57,11 +59,15 @@ public enum BeanFactory {
         validateInitialization();
         Map<Class<?>, Object> controllers = Maps.newHashMap();
         for (Class<?> clazz : beans.keySet()) {
-            if (clazz.isAnnotationPresent(Controller.class)) {
-                controllers.put(clazz, beans.get(clazz));
-            }
+            addControllerFromBeans(controllers, clazz);
         }
         return controllers;
+    }
+
+    private void addControllerFromBeans(Map<Class<?>, Object> controllers, Class<?> clazz) {
+        if (clazz.isAnnotationPresent(Controller.class)) {
+            controllers.put(clazz, beans.get(clazz));
+        }
     }
 
     private Object instantiate(Class<?> clazz, Set<Class<?>> history) {
