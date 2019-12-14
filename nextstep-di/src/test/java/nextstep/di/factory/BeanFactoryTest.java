@@ -77,4 +77,16 @@ public class BeanFactoryTest {
                 Maps.asMap(Sets.newHashSet(AnnotatedController.class, AnnotatedService.class, AnnotatedRepository.class), ClassBeanCreator::new));
         assertThat(beanFactory.getControllers().size()).isEqualTo(1);
     }
+
+    @Test
+    void QuestionRepository가_싱글_인스턴스가_맞는지_테스트() {
+        beanFactory.initialize(ClassBeanScanner.scan(basePackages));
+
+        final MyQnaService myQnaService = beanFactory.getBean(MyQnaService.class);
+
+        final QuestionRepository actual = myQnaService.getQuestionRepository();
+        final QuestionRepository expected = beanFactory.getBean(JdbcQuestionRepository.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
 }
